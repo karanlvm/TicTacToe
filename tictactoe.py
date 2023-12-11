@@ -73,6 +73,7 @@ def terminal(board):
     """
     return winner(board) is not None or all(all(cell is not EMPTY for cell in row) for row in board)
 
+
 def utility(board):
     """
     Returns 1 if X has won the game, -1 if O has won, 0 otherwise.
@@ -88,40 +89,46 @@ def utility(board):
 def minimax(board):
     """
     Returns the optimal action for the current player on the board.
+    I am using alpha beta-pruning
     """
 
-    def max(board):
+    def max_func(board, alpha, beta):
         if terminal(board):
             return utility(board), None
 
         v = float("-inf")
-        best_action = None
+        take_action_max = None
 
         for action in actions(board):
-            min_val, _ = min(result(board, action))
-            if min_val > v:
-                v = min_val
-                best_action = action
+            minimum, _ = min_func(result(board, action), alpha, beta)
+            if minimum > v:
+                v = minimum
+                take_action_max = action
+            alpha = max(alpha, v)
+            if alpha >= beta:
+                break  # Beta Cut-off
 
-        return v, best_action
+        return v, take_action_max
 
-    def min(board):
+    def min_func(board, alpha, beta):
         if terminal(board):
             return utility(board), None
 
         v = float("inf")
-        best_action = None
+        take_action_min = None
 
         for action in actions(board):
-            maximum, _ = max(result(board, action))
+            maximum, _ = max_func(result(board, action), alpha, beta)
             if maximum < v:
                 v = maximum
-                best_action = action
+                take_action_min = action
+            beta = min(beta, v)
+            if beta <= alpha:
+                break  # Alpha Cut-Off
 
-        return v, best_action
+        return v, take_action_min
 
     if player(board) == X:
-        return max(board)[1]
+        return max_func(board, float("-inf"), float("inf"))[1]
     else:
-        return min(board)[1]
-
+        return min_func(board, float("-inf"), float("inf"))[1]
